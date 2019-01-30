@@ -11,3 +11,16 @@
 *.lai
 *.la
 *.a
+
+# Executable files
+bin/print_execution
+bin/process_cfg
+bin/run_crest
+src/process_cfg/process_cfg
+src/run_crest/run_crest
+src/tools/print_execution
+
+include/crest.h
+
+# CIL
+cil/*
