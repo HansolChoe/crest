@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
     }
     
     string search_type = "";
+    char *depth;
     
     // Initialize the random number generator.
     struct timeval tv;
@@ -59,6 +60,9 @@ int main(int argc, char* argv[]) {
                 if (search_type != "") {
                     print_help();
                     return 1;
+                }
+                if (optarg) {
+                    depth = optarg;
                 }
                 search_type = long_options[option_index].name;
                 break;
@@ -91,7 +95,7 @@ int main(int argc, char* argv[]) {
         if (!optarg) {
             strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, 1000000);
         } else {
-            strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, atoi(optarg));
+            strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, atoi(depth));
         }
     } else if (search_type == "cfg") {
         strategy = new crest::CfgHeuristicSearch(prog, num_iters);
@@ -103,7 +107,7 @@ int main(int argc, char* argv[]) {
         if (!optarg) {
             strategy = new crest::UniformRandomSearch(prog, num_iters, 100000000);
         } else {
-            strategy = new crest::UniformRandomSearch(prog, num_iters, atoi(optarg));
+            strategy = new crest::UniformRandomSearch(prog, num_iters, atoi(depth));
         }
     } else {
         fprintf(stderr, "Unknown search strategy: %s\n", search_type.c_str());

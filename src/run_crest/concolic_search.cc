@@ -9,6 +9,7 @@
 // for details.
 
 #include <algorithm>
+#include <iostream>
 #include <assert.h>
 #include <cmath>
 #include <fstream>
@@ -58,6 +59,7 @@ Search::Search(const string& program, int max_iterations)
   : program_(program), max_iters_(max_iterations), num_iters_(0) {
 
   start_time_ = time(NULL);
+  begin_total_ = std::chrono::high_resolution_clock::now();
 
   { // Read in the set of branches.
     max_branch_ = 0;
@@ -187,14 +189,24 @@ void Search::LaunchProgram(const vector<value_t>& inputs) {
     exit(0);
   }
   */
-
+  auto start = std::chrono::high_resolution_clock::now();
   system(program_.c_str());
+  auto end = std::chrono::high_resolution_clock::now();
+  elapsed_time_program_ += (end - start);
 }
 
 
 void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
   if (++num_iters_ > max_iters_) {
     // TODO(jburnim): Devise a better system for capping the iterations.
+      end_total_ = std::chrono::high_resolution_clock::now();
+      elapsed_time_total_ = end_total_ - begin_total_;
+      auto elpased_time_search = elapsed_time_total_ - (elapsed_time_solving_ + elapsed_time_program_);
+      std::cerr <<
+      "Total Elapsed Time: " << elapsed_time_total_.count() << std::endl <<
+      "Search Time: " << elpased_time_search.count() << std::endl <<
+      "Solving Time: " << elapsed_time_solving_.count() << std::endl <<
+      "Program Time: " << elapsed_time_program_.count() << std::endl;
     exit(0);
   }
 
@@ -308,8 +320,12 @@ bool Search::SolveAtBranch(const SymbolicExecution& ex,
   map<var_t,value_t> soln;
   constraints[branch_idx]->Negate();
   // fprintf(stderr, "Yices . . . ");
+  auto start = std::chrono::high_resolution_clock::now();
   bool success = YicesSolver::IncrementalSolve(ex.inputs(), ex.vars(), cs, &soln);
   // fprintf(stderr, "%d\n", success);
+  auto end = std::chrono::high_resolution_clock::now();
+  elapsed_time_solving_ += (end - start);
+
   constraints[branch_idx]->Negate();
 
   if (success) {

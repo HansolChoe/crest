@@ -16,7 +16,7 @@
 #include <ext/hash_map>
 #include <ext/hash_set>
 #include <time.h>
-
+#include <chrono>
 /*
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -57,7 +57,12 @@ class Search {
   unsigned int reachable_branches_;
 
   time_t start_time_;
-
+  std::chrono::high_resolution_clock::time_point begin_total_;
+  std::chrono::high_resolution_clock::time_point end_total_;
+  std::chrono::duration<double> elapsed_time_total_;
+  std::chrono::duration<double> elapsed_time_solving_;
+  std::chrono::duration<double> elapsed_time_program_;
+    
   typedef vector<branch_id_t>::const_iterator BranchIt;
 
   bool SolveAtBranch(const SymbolicExecution& ex,

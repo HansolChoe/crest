@@ -2,7 +2,7 @@
 YICES_DIR=/home/hansolchoe/yices-1.0.40
 
 CC=$(CXX)
-CFLAGS = -I. -I$(YICES_DIR)/include -Wall -O2
+CFLAGS = -I. -I$(YICES_DIR)/include -Wall -O2 -std=c++11 -Wno-narrowing
 CXXFLAGS = $(CFLAGS)
 LDFLAGS = -L$(YICES_DIR)/lib
 LOADLIBES = -lyices
