@@ -48,7 +48,7 @@ class SymbolicInterpreter {
 
   void Branch(id_t id, branch_id_t bid, bool pred_value);
 
-  value_t NewInput(type_t type, addr_t addr);
+  value_t NewInput(type_t type, addr_t addr, value_t value);
 
   // Accessor for symbolic execution so far.
   const SymbolicExecution& execution() const { return ex_; }

@@ -162,30 +162,30 @@ void __CrestHandleReturn(__CREST_ID id, __CREST_VALUE val) {
 
 void __CrestUChar(unsigned char* x) {
   pre_symbolic = 0;
-  *x = (unsigned char)SI->NewInput(types::U_CHAR, (addr_t)x);
+  *x = (unsigned char)SI->NewInput(types::U_CHAR, (addr_t)x, (value_t) *x);
 }
 
 void __CrestUShort(unsigned short* x) {
   pre_symbolic = 0;
-  *x = (unsigned short)SI->NewInput(types::U_SHORT, (addr_t)x);
+  *x = (unsigned short)SI->NewInput(types::U_SHORT, (addr_t)x, (value_t) *x);
 }
 
 void __CrestUInt(unsigned int* x) {
   pre_symbolic = 0;
-  *x = (unsigned int)SI->NewInput(types::U_INT, (addr_t)x);
+  *x = (unsigned int)SI->NewInput(types::U_INT, (addr_t)x, (value_t) *x);
 }
 
 void __CrestChar(char* x) {
   pre_symbolic = 0;
-  *x = (char)SI->NewInput(types::CHAR, (addr_t)x);
+  *x = (char)SI->NewInput(types::CHAR, (addr_t)x, (value_t) *x);
 }
 
 void __CrestShort(short* x) {
   pre_symbolic = 0;
-  *x = (short)SI->NewInput(types::SHORT, (addr_t)x);
+  *x = (short)SI->NewInput(types::SHORT, (addr_t)x, (value_t) *x);
 }
 
 void __CrestInt(int* x) {
   pre_symbolic = 0;
-  *x = (int)SI->NewInput(types::INT, (addr_t)x);
+  *x = (int)SI->NewInput(types::INT, (addr_t)x, (value_t) *x);
 }

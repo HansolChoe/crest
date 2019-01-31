@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <utility>
 #include <vector>
+#include <string.h>
 
 #include "base/symbolic_interpreter.h"
 #include "base/yices_solver.h"
@@ -307,7 +308,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 }
 
 
-value_t SymbolicInterpreter::NewInput(type_t type, addr_t addr) {
+value_t SymbolicInterpreter::NewInput(type_t type, addr_t addr, value_t value) {
   IFDEBUG(fprintf(stderr, "symbolic_input %d %lu\n", type, addr));
 
   mem_[addr] = new SymbolicExpr(1, num_inputs_);
@@ -319,7 +320,12 @@ value_t SymbolicInterpreter::NewInput(type_t type, addr_t addr) {
   } else {
     // Generate a new random input.
     // TODO: User a better pseudorandom number generator.
-    ret = CastTo(rand(), type);
+    char *is_initial_input = getenv("CREST_INITIAL_INPUT");
+	if(is_initial_input && !strcmp(is_initial_input,"true")) {
+	  ret = CastTo(value, type);
+	} else {
+      ret = CastTo(rand(), type);
+	}
     ex_.mutable_inputs()->push_back(ret);
   }
 
