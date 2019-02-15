@@ -81,7 +81,6 @@ int main(int argc, char* argv[]) {
             case 'd':
               // see https://stackoverflow.com/questions/1052746/getopt-does-not-parse-optional-arguments-to-parameters
               search_type = "dfs";
-              printf("dfs\n\n");
               if (!optarg
                   && optind < argc
                   && NULL != argv[optind]
