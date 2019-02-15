@@ -13,6 +13,7 @@
 
 #include <map>
 #include <vector>
+#include <stack>
 #include <ext/hash_map>
 #include <ext/hash_set>
 #include <time.h>
@@ -62,7 +63,7 @@ class Search {
   std::chrono::duration<double> elapsed_time_total_;
   std::chrono::duration<double> elapsed_time_solving_;
   std::chrono::duration<double> elapsed_time_program_;
-    
+
   typedef vector<branch_id_t>::const_iterator BranchIt;
 
   bool SolveAtBranch(const SymbolicExecution& ex,
@@ -80,10 +81,11 @@ class Search {
 
   void RandomInput(const map<var_t,type_t>& vars, vector<value_t>* input);
 
+  const int max_iters_;
+  int num_iters_;
  private:
   const string program_;
-  const int max_iters_; 
-  int num_iters_;
+
 
   /*
   struct sockaddr_un sock_;
@@ -95,22 +97,33 @@ class Search {
   void LaunchProgram(const vector<value_t>& inputs);
 };
 
+typedef struct dfs_execution {
+  size_t pos;
+  int depth;
+} dfs_execution;
 
 class BoundedDepthFirstSearch : public Search {
  public:
   explicit BoundedDepthFirstSearch(const string& program,
-				   int max_iterations,
-				   int max_depth);
+                   int max_iterations,
+                   int max_depth,
+                   bool is_resume_,
+                   string& stack_dir_path);
   virtual ~BoundedDepthFirstSearch();
 
   virtual void Run();
 
+  void save_execution(SymbolicExecution& ex, int index);
+  void load_execution(SymbolicExecution& ex, string& path, int index);
+
  private:
   int max_depth_;
-
+  bool is_resume_;
+  string stack_dir_path_;
   void DFS(size_t pos, int depth, SymbolicExecution& prev_ex);
+  std::stack<dfs_execution> dfs_execution_input_stack_;
+  std::stack<dfs_execution> dfs_execution_output_stack_;
 };
-
 
 /*
 class OldDepthFirstSearch : public Search {
@@ -133,7 +146,7 @@ class RandomInputSearch : public Search {
   virtual ~RandomInputSearch();
 
   virtual void Run();
-  
+
  private:
   SymbolicExecution ex_;
 };
@@ -286,4 +299,3 @@ class CfgHeuristicSearch : public Search {
 }  // namespace crest
 
 #endif  // RUN_CREST_CONCOLIC_SEARCH_H__
-
