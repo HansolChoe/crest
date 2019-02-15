@@ -196,18 +196,21 @@ void Search::LaunchProgram(const vector<value_t>& inputs) {
   elapsed_time_program_ += (end - start);
 }
 
+void Search::print_elapsed_times() {
+  end_total_ = std::chrono::high_resolution_clock::now();
+  elapsed_time_total_ = end_total_ - begin_total_;
+  auto elpased_time_search = elapsed_time_total_ - (elapsed_time_solving_ + elapsed_time_program_);
+  std::cerr <<
+  "Total Elapsed Time: " << elapsed_time_total_.count() << std::endl <<
+  "Search Time: " << elpased_time_search.count() << std::endl <<
+  "Solving Time: " << elapsed_time_solving_.count() << std::endl <<
+  "Program Time: " << elapsed_time_program_.count() << std::endl;
+}
 
 void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
+  print_elapsed_times();
   if (++num_iters_ > max_iters_) {
     // TODO(jburnim): Devise a better system for capping the iterations.
-      end_total_ = std::chrono::high_resolution_clock::now();
-      elapsed_time_total_ = end_total_ - begin_total_;
-      auto elpased_time_search = elapsed_time_total_ - (elapsed_time_solving_ + elapsed_time_program_);
-      std::cerr <<
-      "Total Elapsed Time: " << elapsed_time_total_.count() << std::endl <<
-      "Search Time: " << elpased_time_search.count() << std::endl <<
-      "Solving Time: " << elapsed_time_solving_.count() << std::endl <<
-      "Program Time: " << elapsed_time_program_.count() << std::endl;
     exit(0);
   }
 
@@ -389,6 +392,8 @@ void BoundedDepthFirstSearch::Run() {
     // Initial execution (on empty/random inputs).
     RunProgram(input, &ex);
     UpdateCoverage(ex);
+    system("rm -rf stack");
+    system("mkdir stack");
   } else {
     // resume option
     // restore DFS stack
@@ -414,8 +419,6 @@ void BoundedDepthFirstSearch::Run() {
     }
   }
 
-  system("rm -rf stack");
-  system("mkdir stack");
   DFS(pos, depth, ex);
 
   std::ofstream fout_stack("stack/dfs_execution");
@@ -427,6 +430,7 @@ void BoundedDepthFirstSearch::Run() {
     fout_stack << de.pos << " " << de.depth << std::endl;
   }
   fout_stack.close();
+  void print_elapsed_times();
   exit(1);
 }
 
@@ -466,6 +470,10 @@ void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev
     dfs_execution de = dfs_execution_input_stack_.top();
     load_execution(prev_ex, stack_dir_path_, dfs_execution_input_stack_.size());
     dfs_execution_input_stack_.pop();
+    if(dfs_execution_input_stack_.empty()) {
+      system("rm -rf stack");
+      system("mkdir stack");
+    }
     DFS(de.pos, de.depth, prev_ex);
   }
 
@@ -511,7 +519,7 @@ void BoundedDepthFirstSearch::save_execution(SymbolicExecution& ex, int index) {
   string buff;
   buff.reserve(1<<26);
   ex.Serialize(&buff);
-  std::cout << execution_file_name.c_str() << std::endl;
+  // std::cout << execution_file_name.c_str() << std::endl;
   std::ofstream out(execution_file_name.c_str(), std::ios::out | std::ios::binary);
   out.write(buff.data(), buff.size());
   assert(!out.fail());

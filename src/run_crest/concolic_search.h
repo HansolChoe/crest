@@ -80,12 +80,11 @@ class Search {
 		      set<branch_id_t>* new_branches);
 
   void RandomInput(const map<var_t,type_t>& vars, vector<value_t>* input);
-
   const int max_iters_;
   int num_iters_;
  private:
   const string program_;
-
+  void print_elapsed_times();
 
   /*
   struct sockaddr_un sock_;
