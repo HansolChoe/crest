@@ -484,7 +484,6 @@ void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev
 
   for (size_t i = pos; (i < path.constraints().size()) && (depth > 0); i++) {
     if (num_iters_ >= max_iters_) {
-        is_resume_ = false;
         dfs_execution de = {i, depth};
         dfs_execution_output_stack_.push(de);
         save_execution(prev_ex, dfs_execution_output_stack_.size());

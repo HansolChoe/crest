@@ -118,7 +118,7 @@ bool YicesSolver::Solve(const map<var_t,type_t>& vars,
 
   typedef map<var_t,type_t>::const_iterator VarIt;
 
-  // yices_enable_log_file("yices_log");
+  yices_enable_log_file("yices_log");
   yices_context ctx = yices_mk_context();
   assert(ctx);
 
