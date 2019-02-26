@@ -48,6 +48,8 @@ int main(int argc, char* argv[]) {
     string search_type = "";
     char *depth;
 
+    const char *solver = "z3";
+
     bool is_initial_input_option = false;
     bool is_resume_option = false;
     string stack_dir_path = "";
@@ -57,7 +59,7 @@ int main(int argc, char* argv[]) {
     gettimeofday(&tv, NULL);
     srand((tv.tv_sec * 1000000) + tv.tv_usec);
 
-    while((opt = getopt_long_only(argc, argv,"a:i", long_options, &option_index)) != EOF) {
+    while((opt = getopt_long_only(argc, argv,"a:iy", long_options, &option_index)) != EOF) {
         switch(opt) {
             case 0:
                 if (search_type != "") {
@@ -91,6 +93,9 @@ int main(int argc, char* argv[]) {
                 depth = 0;
               }
               break;
+            case 'y':
+              solver = "yices";
+              break;
             default:
                 print_help();
                 return 1;
@@ -102,11 +107,14 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Set emvoronment variable to on/off initial input option
+    // Set environment variable to on/off initial input option
     const char *input_option_val = is_initial_input_option ? "true" : "false";
     setenv("CREST_INITIAL_INPUT", input_option_val, 1);
     string prog = argv[optind++];
     int num_iters = atoi(argv[optind++]);
+
+    // Set an environmen variable for solver - default : z3
+    setenv("CREST_SOLVER", solver, 1);
 
     crest::Search* strategy;
     if (search_type == "random") {

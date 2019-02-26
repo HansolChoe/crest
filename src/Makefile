@@ -1,16 +1,18 @@
 
 YICES_DIR=/home/hansolchoe/yices-1.0.40
+Z3_LIB=/home/hansolchoe/usr/lib
+Z3_INCLUDE=/home/hansolchoe/include
 
 CC=$(CXX)
-CFLAGS = -I. -I$(YICES_DIR)/include -Wall -O2 -std=c++11 -Wno-narrowing
+CFLAGS = -I. -I$(YICES_DIR)/include -I$(Z3_INCLUDE) -Wall -O2 -std=c++11 -Wno-narrowing
 CXXFLAGS = $(CFLAGS)
-LDFLAGS = -L$(YICES_DIR)/lib
-LOADLIBES = -lyices
+LDFLAGS = -L$(YICES_DIR)/lib -L$(Z3_LIB)
+LOADLIBES = -lyices -lz3
 
 BASE_LIBS = base/basic_types.o base/symbolic_execution.o \
             base/symbolic_interpreter.o base/symbolic_path.o \
             base/symbolic_predicate.o base/symbolic_expression.o \
-            base/yices_solver.o
+            base/yices_solver.o base/z3_solver.o
 
 
 all: libcrest/libcrest.a run_crest/run_crest \

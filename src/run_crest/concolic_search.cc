@@ -22,6 +22,7 @@
 #include <utility>
 
 #include "base/yices_solver.h"
+#include "base/z3_solver.h"
 #include "run_crest/concolic_search.h"
 
 using std::binary_function;
@@ -325,7 +326,13 @@ bool Search::SolveAtBranch(const SymbolicExecution& ex,
   constraints[branch_idx]->Negate();
   // fprintf(stderr, "Yices . . . ");
   auto start = std::chrono::high_resolution_clock::now();
-  bool success = YicesSolver::IncrementalSolve(ex.inputs(), ex.vars(), cs, &soln);
+  string solver(getenv("CREST_SOLVER"));
+  bool success;
+  if(!solver.compare("z3")){
+	  success = Z3Solver::IncrementalSolve(ex.inputs(), ex.vars(), cs, &soln);
+	} else {
+    success = YicesSolver::IncrementalSolve(ex.inputs(), ex.vars(), cs, &soln);
+	}
   // fprintf(stderr, "%d\n", success);
   auto end = std::chrono::high_resolution_clock::now();
   elapsed_time_solving_ += (end - start);
@@ -337,7 +344,6 @@ bool Search::SolveAtBranch(const SymbolicExecution& ex,
     // input.  (Could merge with random inputs, instead.)
     *input = ex.inputs();
     // RandomInput(ex.vars(), input);
-
     typedef map<var_t,value_t>::const_iterator SolnIt;
     for (SolnIt i = soln.begin(); i != soln.end(); ++i) {
       (*input)[i->first] = i->second;
