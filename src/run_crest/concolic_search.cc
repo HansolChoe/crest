@@ -36,11 +36,6 @@ using std::queue;
 using std::random_shuffle;
 using std::stable_sort;
 
-extern std::chrono::duration<double> elapsed_time_A_;
-extern std::chrono::duration<double> elapsed_time_B_;
-extern std::chrono::duration<double> elapsed_time_C_;
-extern std::chrono::duration<double> elapsed_time_A1_;
-extern std::chrono::duration<double> elapsed_time_C1_;
 namespace crest {
 
 
@@ -65,9 +60,14 @@ struct ScoredBranchComp
 
 Search::Search(const string& program, int max_iterations)
   : program_(program), max_iters_(max_iterations), num_iters_(0) {
-
-  start_time_ = time(NULL);
   begin_total_ = std::chrono::high_resolution_clock::now();
+  start_time_ = time(NULL);
+
+  // solver is z3 by default
+  solver_ = "z3";
+
+  is_logging_option_ = false;
+  log_file_name_ = "";
 
   { // Read in the set of branches.
     max_branch_ = 0;
@@ -149,6 +149,15 @@ Search::Search(const string& program, int max_iterations)
 
 Search::~Search() { }
 
+void Search::SetSolver(string& solver) {
+  solver_ = solver;
+}
+void Search::SetIsLoggingOption(bool is_logging_option) {
+  is_logging_option_ = is_logging_option;
+}
+void Search::SetLogFileName(string& log_file_name) {
+  log_file_name_ = log_file_name;
+}
 
 void Search::WriteInputToFileOrDie(const string& file,
 				   const vector<value_t>& input) {
@@ -203,25 +212,19 @@ void Search::LaunchProgram(const vector<value_t>& inputs) {
   elapsed_time_program_ += (end - start);
 }
 
-void Search::print_elapsed_times() {
+void Search::PrintElapsedTimes() {
   end_total_ = std::chrono::high_resolution_clock::now();
   elapsed_time_total_ = end_total_ - begin_total_;
   auto elpased_time_search = elapsed_time_total_ - (elapsed_time_solving_ + elapsed_time_program_);
-  auto elapsed_time_incremental =
-    elapsed_time_solving_ - (
-      elapsed_time_A_ +
-      elapsed_time_B_ +
-      elapsed_time_C_
-    );
   std::cerr <<
   "Total Elapsed Time: " << elapsed_time_total_.count() << std::endl <<
-  "Search Time: " << elpased_time_search.count() << std::endl <<
-  "Solving Time: " << elapsed_time_solving_.count() << std::endl <<
-  "Program Time: " << elapsed_time_program_.count() << std::endl;
+  "  Search Time: " << elpased_time_search.count() << std::endl <<
+  "  Solving Time: " << elapsed_time_solving_.count() << std::endl <<
+  "  Program Time: " << elapsed_time_program_.count() << std::endl;
 }
 
 void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
-  print_elapsed_times();
+  PrintElapsedTimes();
   if (++num_iters_ > max_iters_) {
     // TODO(jburnim): Devise a better system for capping the iterations.
     exit(0);
@@ -248,6 +251,7 @@ void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
 bool Search::UpdateCoverage(const SymbolicExecution& ex) {
   return UpdateCoverage(ex, NULL);
 }
+
 
 bool Search::UpdateCoverage(const SymbolicExecution& ex,
 			    set<branch_id_t>* new_branches) {
@@ -281,6 +285,16 @@ bool Search::UpdateCoverage(const SymbolicExecution& ex,
     WriteCoverageToFileOrDie("coverage");
   }
 
+  if(is_logging_option_) {
+    FILE *f = fopen(log_file_name_.c_str(), "a");
+    if (!f) {
+      fprintf(stderr, "Writing logging, failed to open %s.\n", log_file_name_.c_str());
+      perror("Error: ");
+      return found_new_branch;
+    }
+    fprintf(f, "%u\n", total_num_covered_);
+    fclose(f);
+  }
   return found_new_branch;
 }
 
@@ -338,9 +352,8 @@ bool Search::SolveAtBranch(const SymbolicExecution& ex,
   constraints[branch_idx]->Negate();
   // fprintf(stderr, "Yices . . . ");
   auto start = std::chrono::high_resolution_clock::now();
-  string solver(getenv("CREST_SOLVER"));
   bool success;
-  if(!solver.compare("z3")){
+  if(!solver_.compare("z3")){
 	  success = Z3Solver::IncrementalSolve(ex.inputs(), ex.vars(), cs, &soln);
 	} else {
     success = YicesSolver::IncrementalSolve(ex.inputs(), ex.vars(), cs, &soln);
@@ -448,7 +461,7 @@ void BoundedDepthFirstSearch::Run() {
     fout_stack << de.pos << " " << de.depth << std::endl;
   }
   fout_stack.close();
-  void print_elapsed_times();
+  PrintElapsedTimes();
   exit(1);
 }
 
