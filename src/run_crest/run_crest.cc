@@ -48,10 +48,13 @@ int main(int argc, char* argv[]) {
     string search_type = "";
     char *depth;
 
-    const char *solver = "z3";
+    string solver = "z3";
 
     bool is_initial_input_option = false;
     bool is_resume_option = false;
+    bool is_logging_option = false;
+
+    string log_file_name = "";
     string stack_dir_path = "";
 
     // Initialize the random number generator.
@@ -59,7 +62,7 @@ int main(int argc, char* argv[]) {
     gettimeofday(&tv, NULL);
     srand((tv.tv_sec * 1000000) + tv.tv_usec);
 
-    while((opt = getopt_long_only(argc, argv,"a:iy", long_options, &option_index)) != EOF) {
+    while((opt = getopt_long_only(argc, argv,"a:liy", long_options, &option_index)) != EOF) {
         switch(opt) {
             case 0:
                 if (search_type != "") {
@@ -77,6 +80,15 @@ int main(int argc, char* argv[]) {
                     stack_dir_path = optarg;
                 } else {
                   fprintf(stderr, "Must specify stack directory\n");
+                  return 1;
+                }
+                break;
+            case 'l':
+                is_logging_option = true;
+                if (optarg) {
+                  log_file_name = optarg;
+                } else {
+                  fprintf(stderr, "Enter log file name\n");
                   return 1;
                 }
                 break;
@@ -113,9 +125,6 @@ int main(int argc, char* argv[]) {
     string prog = argv[optind++];
     int num_iters = atoi(argv[optind++]);
 
-    // Set an environmen variable for solver - default : z3
-    setenv("CREST_SOLVER", solver, 1);
-
     crest::Search* strategy;
     if (search_type == "random") {
         strategy = new crest::RandomSearch(prog, num_iters);
@@ -143,6 +152,11 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Unknown search strategy: %s\n", search_type.c_str());
         return 1;
     }
+  strategy->setSolver(solver);
+  if(is_logging_option) {
+    strategy->setIsLoggingOption(is_logging_option);
+    strategy->setLogFileName(log_file_name);
+  }
 
   strategy->Run();
 
