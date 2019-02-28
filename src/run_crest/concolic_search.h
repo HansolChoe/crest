@@ -41,6 +41,9 @@ class Search {
 
   virtual void Run() = 0;
 
+  void setSolver(string& solver);
+  void setIsLoggingOption(bool is_logging_option);
+  void setLogFileName(string& log_file_name);
  protected:
   vector<branch_id_t> branches_;
   vector<branch_id_t> paired_branch_;
@@ -82,10 +85,13 @@ class Search {
   void RandomInput(const map<var_t,type_t>& vars, vector<value_t>* input);
   const int max_iters_;
   int num_iters_;
+  void PrintElapsedTimes();
  private:
   const string program_;
-  void print_elapsed_times();
 
+  string solver_;
+  bool is_logging_option_;
+  string log_file_name_;
   /*
   struct sockaddr_un sock_;
   int sockd_;
