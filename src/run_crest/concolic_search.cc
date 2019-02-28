@@ -69,12 +69,6 @@ Search::Search(const string& program, int max_iterations)
   start_time_ = time(NULL);
   begin_total_ = std::chrono::high_resolution_clock::now();
 
-  elapsed_time_A_= std::chrono::nanoseconds::zero();
-  elapsed_time_B_= std::chrono::nanoseconds::zero();
-  elapsed_time_C_= std::chrono::nanoseconds::zero();
-  elapsed_time_A1_= std::chrono::nanoseconds::zero();
-  elapsed_time_C1_= std::chrono::nanoseconds::zero();
-
   { // Read in the set of branches.
     max_branch_ = 0;
     max_function_ = 0;
@@ -223,12 +217,6 @@ void Search::print_elapsed_times() {
   "Total Elapsed Time: " << elapsed_time_total_.count() << std::endl <<
   "Search Time: " << elpased_time_search.count() << std::endl <<
   "Solving Time: " << elapsed_time_solving_.count() << std::endl <<
-  "  Solving Time A: " << elapsed_time_A_.count() << std::endl <<
-  "    Solving Time A1: " << elapsed_time_A1_.count() << std::endl <<
-  "  Solving Time B: " << elapsed_time_B_.count() << std::endl <<
-  "  Solving Time C: " << elapsed_time_C_.count() << std::endl <<
-  "    Solving Time C1: " << elapsed_time_C1_.count() << std::endl <<
-  "  Solving Time incremental: " << elapsed_time_incremental.count() << std::endl <<
   "Program Time: " << elapsed_time_program_.count() << std::endl;
 }
 
