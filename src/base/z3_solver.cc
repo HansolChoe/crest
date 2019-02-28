@@ -26,6 +26,12 @@ using std::set;
 
 using namespace z3;
 
+std::chrono::duration<double> elapsed_time_A_;
+std::chrono::duration<double> elapsed_time_B_;
+std::chrono::duration<double> elapsed_time_C_;
+std::chrono::duration<double> elapsed_time_A1_;
+std::chrono::duration<double> elapsed_time_C1_;
+
 namespace crest {
 
 typedef vector<const SymbolicPred*>::const_iterator PredIt;
@@ -100,29 +106,31 @@ bool Z3Solver::IncrementalSolve(const vector<value_t>& old_soln,
 bool Z3Solver::Solve(const map<var_t,type_t>& vars,
 			const vector<const SymbolicPred*>& constraints,
 			map<var_t,value_t>* soln) {
-      // std::chrono::high_resolution_clock::time_point begin;
-      // std::chrono::high_resolution_clock::time_point end;
-      // std::chrono::duration<double> elapsed_time;
-      // begin = std::chrono::high_resolution_clock::now();
-      // end = std::chrono::high_resolution_clock::now();
-      // elapsed_time = end - begin;
-      // std::cout << "1 : "<<elapsed_time << std::endl;
+
   typedef map<var_t, type_t>::const_iterator VarIt;
 
   context ctx;
-  solver s(ctx);
-
+  // solver s(ctx, "QF_IDL");
+  solver s = tactic(ctx, "smt").mk_solver();
+  // solver s = (tactic(ctx, "QF_IDL")).mk_solver();
+  // solver s(ctx);
+  auto start = std::chrono::high_resolution_clock::now();
   map<var_t, Z3_ast> x_expr;
   for (VarIt i = vars.begin(); i != vars.end(); ++i) {
-    std::stringstream x_name;
-    x_name << "x" << i->first;
-    x_expr[i->first] = ctx.int_const(x_name.str().c_str());
+    char buff[32];
+    snprintf(buff, sizeof(buff), "x%d", i->first);
+    x_expr[i->first] = ctx.int_const(buff);
     expr e(ctx, x_expr[i->first]);
     assert(e);
+    auto start2 = std::chrono::high_resolution_clock::now();
     s.add(e >= kMinValue[i->second]);
     s.add(e <= kMaxValue[i->second]);
+    auto end2 = std::chrono::high_resolution_clock::now();
+    elapsed_time_A1_ += (end2 - start2);
   }
-
+  auto end = std::chrono::high_resolution_clock::now();
+	elapsed_time_A_ += (end - start);
+  start = std::chrono::high_resolution_clock::now();
   { // Constraints.
     for (PredIt i = constraints.begin(); i != constraints.end(); ++i) {
       const SymbolicExpr& se = (*i)->expr();
@@ -151,12 +159,17 @@ bool Z3Solver::Solve(const map<var_t,type_t>& vars,
       }
     }
   }
-
+  end = std::chrono::high_resolution_clock::now();
+	elapsed_time_B_ += (end - start);
+	start = std::chrono::high_resolution_clock::now();
+  auto start2 = std::chrono::high_resolution_clock::now();
   bool success = (s.check() == sat);
+  auto end2 = std::chrono::high_resolution_clock::now();
+  elapsed_time_C1_ += (end2 - start2);
   if (success) {
     soln->clear();
     model m = s.get_model();
-    std::cout << "s : " << s << std::endl;
+    // std::cout << "s : " << s << std::endl;
     for (VarIt i = vars.begin(); i != vars.end(); ++i) {
       expr x = m.eval(expr(ctx, x_expr[i->first]));
       long val;
@@ -164,6 +177,8 @@ bool Z3Solver::Solve(const map<var_t,type_t>& vars,
       soln->insert(make_pair(i->first, val));
     }
   }
+  end = std::chrono::high_resolution_clock::now();
+	elapsed_time_C_ += (end - start);
   return success;
 }
 

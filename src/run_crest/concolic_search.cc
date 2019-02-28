@@ -36,7 +36,13 @@ using std::queue;
 using std::random_shuffle;
 using std::stable_sort;
 
+extern std::chrono::duration<double> elapsed_time_A_;
+extern std::chrono::duration<double> elapsed_time_B_;
+extern std::chrono::duration<double> elapsed_time_C_;
+extern std::chrono::duration<double> elapsed_time_A1_;
+extern std::chrono::duration<double> elapsed_time_C1_;
 namespace crest {
+
 
 namespace {
 
@@ -62,6 +68,12 @@ Search::Search(const string& program, int max_iterations)
 
   start_time_ = time(NULL);
   begin_total_ = std::chrono::high_resolution_clock::now();
+
+  elapsed_time_A_= std::chrono::nanoseconds::zero();
+  elapsed_time_B_= std::chrono::nanoseconds::zero();
+  elapsed_time_C_= std::chrono::nanoseconds::zero();
+  elapsed_time_A1_= std::chrono::nanoseconds::zero();
+  elapsed_time_C1_= std::chrono::nanoseconds::zero();
 
   { // Read in the set of branches.
     max_branch_ = 0;
@@ -201,10 +213,22 @@ void Search::print_elapsed_times() {
   end_total_ = std::chrono::high_resolution_clock::now();
   elapsed_time_total_ = end_total_ - begin_total_;
   auto elpased_time_search = elapsed_time_total_ - (elapsed_time_solving_ + elapsed_time_program_);
+  auto elapsed_time_incremental =
+    elapsed_time_solving_ - (
+      elapsed_time_A_ +
+      elapsed_time_B_ +
+      elapsed_time_C_
+    );
   std::cerr <<
   "Total Elapsed Time: " << elapsed_time_total_.count() << std::endl <<
   "Search Time: " << elpased_time_search.count() << std::endl <<
   "Solving Time: " << elapsed_time_solving_.count() << std::endl <<
+  "  Solving Time A: " << elapsed_time_A_.count() << std::endl <<
+  "    Solving Time A1: " << elapsed_time_A1_.count() << std::endl <<
+  "  Solving Time B: " << elapsed_time_B_.count() << std::endl <<
+  "  Solving Time C: " << elapsed_time_C_.count() << std::endl <<
+  "    Solving Time C1: " << elapsed_time_C1_.count() << std::endl <<
+  "  Solving Time incremental: " << elapsed_time_incremental.count() << std::endl <<
   "Program Time: " << elapsed_time_program_.count() << std::endl;
 }
 
