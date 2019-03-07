@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
     gettimeofday(&tv, NULL);
     srand((tv.tv_sec * 1000000) + tv.tv_usec);
 
-    while((opt = getopt_long_only(argc, argv,"a:liy", long_options, &option_index)) != EOF) {
+    while((opt = getopt_long_only(argc, argv,"a:l:iy", long_options, &option_index)) != EOF) {
         switch(opt) {
             case 0:
                 if (search_type != "") {
@@ -86,10 +86,10 @@ int main(int argc, char* argv[]) {
             case 'l':
                 is_logging_option = true;
                 if (optarg) {
-                  log_file_name = optarg;
+                    log_file_name = optarg;
                 } else {
-                  fprintf(stderr, "Enter log file name\n");
-                  return 1;
+                    fprintf(stderr, "Enter log file name\n");
+                    return 1;
                 }
                 break;
             case 'd':
@@ -152,12 +152,14 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Unknown search strategy: %s\n", search_type.c_str());
         return 1;
     }
-  strategy->setSolver(solver);
+  strategy->SetSolver(solver);
   if(is_logging_option) {
-    strategy->setIsLoggingOption(is_logging_option);
-    strategy->setLogFileName(log_file_name);
+    strategy->SetIsLoggingOption(is_logging_option);
+    strategy->SetLogFileName(log_file_name);
+    // To make sure crest do not append to the existing file,
+    // remove the file first
+    std::remove(log_file_name.c_str());
   }
-
   strategy->Run();
 
   delete strategy;

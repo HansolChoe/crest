@@ -41,9 +41,10 @@ class Search {
 
   virtual void Run() = 0;
 
-  void setSolver(string& solver);
-  void setIsLoggingOption(bool is_logging_option);
-  void setLogFileName(string& log_file_name);
+  void SetSolver(string& solver);
+  void SetIsLoggingOption(bool is_logging_option);
+  void SetLogFileName(string& log_file_name);
+  
  protected:
   vector<branch_id_t> branches_;
   vector<branch_id_t> paired_branch_;

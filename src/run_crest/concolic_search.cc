@@ -68,7 +68,6 @@ Search::Search(const string& program, int max_iterations)
 
   is_logging_option_ = false;
   log_file_name_ = "";
-  
   { // Read in the set of branches.
     max_branch_ = 0;
     max_function_ = 0;
@@ -149,14 +148,14 @@ Search::Search(const string& program, int max_iterations)
 
 Search::~Search() { }
 
-void Search::setSolver(string& solver) {
+void Search::SetSolver(string& solver) {
   solver_ = solver;
 }
-void Search::setIsLoggingOption(bool is_logging_option) {
+void Search::SetIsLoggingOption(bool is_logging_option) {
   is_logging_option_ = is_logging_option;
 }
-void Search::setLogFileName(string& log_file_name) {
-  log_file_name_ = log_file_name_;
+void Search::SetLogFileName(string& log_file_name) {
+  log_file_name_ = log_file_name;
 }
 
 void Search::WriteInputToFileOrDie(const string& file,
@@ -218,9 +217,9 @@ void Search::PrintElapsedTimes() {
   auto elpased_time_search = elapsed_time_total_ - (elapsed_time_solving_ + elapsed_time_program_);
   std::cerr <<
   "Total Elapsed Time: " << elapsed_time_total_.count() << std::endl <<
-  "Search Time: " << elpased_time_search.count() << std::endl <<
-  "Solving Time: " << elapsed_time_solving_.count() << std::endl <<
-  "Program Time: " << elapsed_time_program_.count() << std::endl;
+  "  Search Time: " << elpased_time_search.count() << std::endl <<
+  "  Solving Time: " << elapsed_time_solving_.count() << std::endl <<
+  "  Program Time: " << elapsed_time_program_.count() << std::endl;
 }
 
 void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
@@ -251,6 +250,7 @@ void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
 bool Search::UpdateCoverage(const SymbolicExecution& ex) {
   return UpdateCoverage(ex, NULL);
 }
+
 
 bool Search::UpdateCoverage(const SymbolicExecution& ex,
 			    set<branch_id_t>* new_branches) {
@@ -284,6 +284,16 @@ bool Search::UpdateCoverage(const SymbolicExecution& ex,
     WriteCoverageToFileOrDie("coverage");
   }
 
+  if(is_logging_option_) {
+    FILE *f = fopen(log_file_name_.c_str(), "a");
+    if (!f) {
+      fprintf(stderr, "Writing logging, failed to open %s.\n", log_file_name_.c_str());
+      perror("Error: ");
+      return found_new_branch;
+    }
+    fprintf(f, "%u\n", total_num_covered_);
+    fclose(f);
+  }
   return found_new_branch;
 }
 
