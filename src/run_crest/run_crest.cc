@@ -140,11 +140,8 @@ int main(int argc, char* argv[]) {
     } else if (search_type == "random_input") {
         strategy = new crest::RandomInputSearch(prog, num_iters);
     } else if (search_type == "dfs") {
-
         int depth_ = depth?atoi(depth):1000000;
-        fprintf(stderr, "why?\n");
         int loop_bound_ = loop_bound?atoi(loop_bound):depth_;
-
         strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, depth_, loop_bound_ , is_resume_option, stack_dir_path);
     } else if (search_type == "cfg") {
         strategy = new crest::CfgHeuristicSearch(prog, num_iters);

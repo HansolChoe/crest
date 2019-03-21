@@ -129,7 +129,7 @@ class BoundedDepthFirstSearch : public Search {
   bool is_resume_;
   string stack_dir_path_;
   // void DFS(size_t pos, int depth, SymbolicExecution& prev_ex);
-  void DFS(size_t pos, int depth, SymbolicExecution& prev_ex, map<branch_id_t, unsigned int>& branch_count);
+  void DFS(size_t pos, int depth, SymbolicExecution& prev_ex, map<branch_id_t, unsigned int> branch_count);
   std::stack<dfs_execution> dfs_execution_input_stack_;
   std::stack<dfs_execution> dfs_execution_output_stack_;
 };

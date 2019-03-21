@@ -496,7 +496,7 @@ void BoundedDepthFirstSearch::DFS(int depth, SymbolicExecution& prev_ex) {
 }
   */
 
-void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev_ex, map<branch_id_t, unsigned int>& branch_count) {
+void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev_ex, map<branch_id_t, unsigned int> branch_count) {
 // void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev_ex) {
   if(is_resume_ && !dfs_execution_input_stack_.empty()) {
     dfs_execution de = dfs_execution_input_stack_.top();
@@ -527,12 +527,12 @@ void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev
     }
 
     branch_id_t branch = path.branches()[path.constraints_idx()[i]];
-    // std::cerr << "branch_count[" << branch << "] = " << branch_count[branch] << std::endl;
     if(branch_count[branch] >= loop_bound_) {
       continue;
     }
     branch_count[branch]++;
     std::cerr << "branch_count[" << branch << "] = " << branch_count[branch] << std::endl;
+    // std::cerr << "B branch_count[" << branch << "] = " << branch_count[branch] << std::endl;
 
     // Run on those constraints.
     RunProgram(input, &cur_ex);
@@ -546,8 +546,7 @@ void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev
 
     // We successfully solved the branch, recurse.
     depth--;
-    DFS(i+1, depth, cur_ex,branch_count);
-    branch_count[branch]--;
+    DFS(i+1, depth, cur_ex, branch_count);
   }
 }
 
