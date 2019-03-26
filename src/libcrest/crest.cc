@@ -189,3 +189,13 @@ void __CrestInt(int* x) {
   pre_symbolic = 0;
   *x = (int)SI->NewInput(types::INT, (addr_t)x, (value_t) *x);
 }
+
+// Dump input map at this moment
+void __CrestDumpMemory() {
+  SI->DumpMemory();
+}
+
+void __CrestPrintSymbolic(const char *s, int *x) {
+  std::string str = s;
+  SI->PrintSymbolic(str, (addr_t) x);
+}

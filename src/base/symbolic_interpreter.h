@@ -56,6 +56,7 @@ class SymbolicInterpreter {
   // Debugging.
   void DumpMemory();
   void DumpPath();
+  void PrintSymbolic(string label, addr_t addr);
 
  private:
   struct StackElem {

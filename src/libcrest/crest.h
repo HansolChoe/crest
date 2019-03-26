@@ -193,6 +193,8 @@ EXTERN void __CrestHandleReturn(__CREST_ID, __CREST_VALUE) __SKIP;
 #define CREST_char(x) __CrestChar(&x)
 #define CREST_short(x) __CrestShort(&x)
 #define CREST_int(x) __CrestInt(&x)
+#define CREST_dump() __CrestDumpMemory()
+#define CREST_print_symbolic(label, x) __CrestPrintSymbolic(label, &x)
 
 EXTERN void __CrestUChar(unsigned char* x) __SKIP;
 EXTERN void __CrestUShort(unsigned short* x) __SKIP;
@@ -200,5 +202,7 @@ EXTERN void __CrestUInt(unsigned int* x) __SKIP;
 EXTERN void __CrestChar(char* x) __SKIP;
 EXTERN void __CrestShort(short* x) __SKIP;
 EXTERN void __CrestInt(int* x) __SKIP;
+EXTERN void __CrestDumpMemory() __SKIP;
+EXTERN void __CrestPrintSymbolic(const char *label, int *x) __SKIP;
 
 #endif  /* LIBCREST_CREST_H__ */

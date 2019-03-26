@@ -68,6 +68,16 @@ void SymbolicInterpreter::DumpMemory() {
   }
 }
 
+void SymbolicInterpreter::PrintSymbolic(string label, addr_t addr) {
+  string s;
+  ConstMemIt it = mem_.find(addr);
+  if(it->second) {
+      it->second->AppendToString(&s);
+  } else {
+    s = "(concrete)";
+  }
+  fprintf(stderr, "%s:\n  symbolic : %s\n  concrete : %d\n",label.c_str(), s.c_str(), *(int*)(addr));
+}
 
 void SymbolicInterpreter::ClearStack(id_t id) {
   IFDEBUG(fprintf(stderr, "clear\n"));
