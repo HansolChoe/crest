@@ -44,7 +44,7 @@ class Search {
   void SetSolver(string& solver);
   void SetIsLoggingOption(bool is_logging_option);
   void SetLogFileName(string& log_file_name);
-  
+
  protected:
   vector<branch_id_t> branches_;
   vector<branch_id_t> paired_branch_;
@@ -113,6 +113,7 @@ class BoundedDepthFirstSearch : public Search {
   explicit BoundedDepthFirstSearch(const string& program,
                    int max_iterations,
                    int max_depth,
+                   int loop_bound,
                    bool is_resume_,
                    string& stack_dir_path);
   virtual ~BoundedDepthFirstSearch();
@@ -124,9 +125,11 @@ class BoundedDepthFirstSearch : public Search {
 
  private:
   int max_depth_;
+  int loop_bound_;
   bool is_resume_;
   string stack_dir_path_;
-  void DFS(size_t pos, int depth, SymbolicExecution& prev_ex);
+  // void DFS(size_t pos, int depth, SymbolicExecution& prev_ex);
+  void DFS(size_t pos, int depth, SymbolicExecution& prev_ex, map<branch_id_t, unsigned int> branch_count);
   std::stack<dfs_execution> dfs_execution_input_stack_;
   std::stack<dfs_execution> dfs_execution_output_stack_;
 };

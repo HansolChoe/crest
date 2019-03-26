@@ -46,7 +46,8 @@ int main(int argc, char* argv[]) {
     }
 
     string search_type = "";
-    char *depth;
+    char *depth = 0;
+    char *loop_bound = 0;
 
     string solver = "z3";
 
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]) {
     gettimeofday(&tv, NULL);
     srand((tv.tv_sec * 1000000) + tv.tv_usec);
 
-    while((opt = getopt_long_only(argc, argv,"a:l:iy", long_options, &option_index)) != EOF) {
+    while((opt = getopt_long_only(argc, argv,"a:b:il:y", long_options, &option_index)) != EOF) {
         switch(opt) {
             case 0:
                 if (search_type != "") {
@@ -105,6 +106,14 @@ int main(int argc, char* argv[]) {
                 depth = 0;
               }
               break;
+            case 'b':
+              if (optarg) {
+                  loop_bound = optarg;
+              } else {
+                  fprintf(stderr, "Enter loop bound\n");
+                  return 1;
+              }
+              break;
             case 'y':
               solver = "yices";
               break;
@@ -131,11 +140,9 @@ int main(int argc, char* argv[]) {
     } else if (search_type == "random_input") {
         strategy = new crest::RandomInputSearch(prog, num_iters);
     } else if (search_type == "dfs") {
-        if (depth) {
-            strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, atoi(depth), is_resume_option, stack_dir_path );
-        } else {
-            strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, 1000000, is_resume_option, stack_dir_path);
-        }
+        int depth_ = depth?atoi(depth):1000000;
+        int loop_bound_ = loop_bound?atoi(loop_bound):depth_;
+        strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, depth_, loop_bound_ , is_resume_option, stack_dir_path);
     } else if (search_type == "cfg") {
         strategy = new crest::CfgHeuristicSearch(prog, num_iters);
     } else if (search_type == "cfg_baseline") {
