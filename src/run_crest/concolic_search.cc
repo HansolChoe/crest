@@ -285,13 +285,17 @@ bool Search::UpdateCoverage(const SymbolicExecution& ex,
   }
 
   if(is_logging_option_) {
+
     FILE *f = fopen(log_file_name_.c_str(), "a");
     if (!f) {
       fprintf(stderr, "Writing logging, failed to open %s.\n", log_file_name_.c_str());
       perror("Error: ");
       return found_new_branch;
     }
-    fprintf(f, "%u\n", total_num_covered_);
+    end_total_ = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> time_diff = end_total_ - begin_total_;
+
+    fprintf(f, "%u,%lf\n", total_num_covered_, time_diff);
     fclose(f);
   }
   return found_new_branch;
@@ -403,12 +407,17 @@ bool Search::CheckPrediction(const SymbolicExecution& old_ex,
 ////////////////////////////////////////////////////////////////////////
 
 BoundedDepthFirstSearch::BoundedDepthFirstSearch
-(const string& program, int max_iterations, int max_depth, int loop_bound, bool is_resume, string& stack_dir_path)
+(const string& program, int max_iterations, int max_depth, int loop_bound, int loop_bound_update_gap, string& loop_bound_file_name, bool is_resume, string& stack_dir_path)
   : Search(program, max_iterations),
     max_depth_(max_depth),
     loop_bound_(loop_bound),
+    loop_bound_update_gap_(loop_bound_update_gap),
+    loop_bound_file_name_(loop_bound_file_name),
     is_resume_(is_resume),
     stack_dir_path_(stack_dir_path) {
+      additional_loop_bound_ = 0;
+      no_update_count_ = 0;
+
   }
 
 BoundedDepthFirstSearch::~BoundedDepthFirstSearch() { }
@@ -419,6 +428,7 @@ void BoundedDepthFirstSearch::Run() {
   size_t pos = 0;
   int depth = max_depth_;
   map<branch_id_t, unsigned int> branch_count;
+
   if(!is_resume_) {
     // Initial execution (on empty/random inputs).
     RunProgram(input, &ex);
@@ -449,6 +459,22 @@ void BoundedDepthFirstSearch::Run() {
       load_execution(ex, stack_dir_path_, number_of_executions);
     }
   }
+  // std::cout << "here : "<< loop_bound_file_name_<< std::endl;
+  if(loop_bound_file_name_!="") {
+    std::ifstream lb_in(loop_bound_file_name_);
+    if (lb_in.is_open()) {
+      branch_id_t bid;
+      unsigned int bound;
+      while(lb_in >> bid >> bound) {
+        loop_bound_branches_[bid] = bound;
+        // std::cout << "bid : " << bid << " bound : " << bound << std::endl;
+      }
+      lb_in.close();
+    } else {
+        std::cerr << "Failed to open : " << loop_bound_file_name_ << std::endl;
+        exit(1);
+    }
+  }
 
   DFS(pos, depth, ex, branch_count);
 
@@ -462,7 +488,7 @@ void BoundedDepthFirstSearch::Run() {
   }
   fout_stack.close();
   PrintElapsedTimes();
-  exit(1);
+  exit(0);
 }
 
   /*
@@ -527,16 +553,40 @@ void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev
     }
 
     branch_id_t branch = path.branches()[path.constraints_idx()[i]];
-    if(branch_count[branch] >= loop_bound_) {
+
+    if(loop_bound_branches_[branch]) {
+      if(branch_count[branch] >= loop_bound_branches_[branch]) {
+        continue;
+      }
+    }
+
+    if(branch_count[branch] >= loop_bound_ + additional_loop_bound_) {
       continue;
     }
+
     branch_count[branch]++;
     std::cerr << "branch_count[" << branch << "] = " << branch_count[branch] << std::endl;
-    // std::cerr << "B branch_count[" << branch << "] = " << branch_count[branch] << std::endl;
+    // std::cerr << "branch_count[" << branch << "] = " << branch_count[branch] << std::endl;
 
+    int prev_covered = total_num_covered_;
     // Run on those constraints.
     RunProgram(input, &cur_ex);
     UpdateCoverage(cur_ex);
+
+    int num_covered = total_num_covered_;
+
+    if(loop_bound_update_gap_) {
+      if(num_covered > prev_covered) {
+        additional_loop_bound_ = 0;
+        no_update_count_ = 0;
+      } else {
+        if ( ++no_update_count_ >= loop_bound_update_gap_) {
+            no_update_count_ = 0;
+            additional_loop_bound_++;
+        }
+      }
+    }
+
     // Check for prediction failure.
     size_t branch_idx = path.constraints_idx()[i];
     if (!CheckPrediction(prev_ex, cur_ex, branch_idx)) {

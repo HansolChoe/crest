@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
     string search_type = "";
     char *depth = 0;
     char *loop_bound = 0;
+    char *loop_bound_update_gap = "0";
 
     string solver = "z3";
 
@@ -57,13 +58,14 @@ int main(int argc, char* argv[]) {
 
     string log_file_name = "";
     string stack_dir_path = "";
+    string loop_bound_file_name = "";
 
     // Initialize the random number generator.
     struct timeval tv;
     gettimeofday(&tv, NULL);
     srand((tv.tv_sec * 1000000) + tv.tv_usec);
 
-    while((opt = getopt_long_only(argc, argv,"a:b:il:y", long_options, &option_index)) != EOF) {
+    while((opt = getopt_long_only(argc, argv,"a:b:il:yf:g:", long_options, &option_index)) != EOF) {
         switch(opt) {
             case 0:
                 if (search_type != "") {
@@ -106,6 +108,14 @@ int main(int argc, char* argv[]) {
                 depth = 0;
               }
               break;
+            case 'f':
+              if (optarg) {
+                  loop_bound_file_name = optarg;
+              } else {
+                fprintf(stderr, "Enter loop bound file name\n");
+                return 1;
+              }
+              break;
             case 'b':
               if (optarg) {
                   loop_bound = optarg;
@@ -113,6 +123,14 @@ int main(int argc, char* argv[]) {
                   fprintf(stderr, "Enter loop bound\n");
                   return 1;
               }
+              break;
+            case 'g':
+                if (optarg) {
+                    loop_bound_update_gap = optarg;
+                } else {
+                    fprintf(stderr, "Enter loop bound update gap\n");
+                    return 1;
+                }
               break;
             case 'y':
               solver = "yices";
@@ -142,7 +160,15 @@ int main(int argc, char* argv[]) {
     } else if (search_type == "dfs") {
         int depth_ = depth?atoi(depth):1000000;
         int loop_bound_ = loop_bound?atoi(loop_bound):depth_;
-        strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, depth_, loop_bound_ , is_resume_option, stack_dir_path);
+        int loop_bound_update_gap_ = atoi(loop_bound_update_gap);
+        strategy = new crest::BoundedDepthFirstSearch(prog,
+                                                      num_iters,
+                                                      depth_,
+                                                      loop_bound_,
+                                                      loop_bound_update_gap_,
+                                                      loop_bound_file_name,
+                                                      is_resume_option,
+                                                      stack_dir_path);
     } else if (search_type == "cfg") {
         strategy = new crest::CfgHeuristicSearch(prog, num_iters);
     } else if (search_type == "cfg_baseline") {

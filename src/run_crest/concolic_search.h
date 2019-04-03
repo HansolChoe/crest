@@ -114,6 +114,8 @@ class BoundedDepthFirstSearch : public Search {
                    int max_iterations,
                    int max_depth,
                    int loop_bound,
+                   int loop_bound_update_gap,
+                   string & loop_bound_file_name,
                    bool is_resume_,
                    string& stack_dir_path);
   virtual ~BoundedDepthFirstSearch();
@@ -126,9 +128,14 @@ class BoundedDepthFirstSearch : public Search {
  private:
   int max_depth_;
   int loop_bound_;
+  int additional_loop_bound_;
+  int loop_bound_update_gap_;
+  int no_update_count_;
   bool is_resume_;
+  string loop_bound_file_name_;
   string stack_dir_path_;
   // void DFS(size_t pos, int depth, SymbolicExecution& prev_ex);
+  map<branch_id_t, unsigned int> loop_bound_branches_;
   void DFS(size_t pos, int depth, SymbolicExecution& prev_ex, map<branch_id_t, unsigned int> branch_count);
   std::stack<dfs_execution> dfs_execution_input_stack_;
   std::stack<dfs_execution> dfs_execution_output_stack_;
