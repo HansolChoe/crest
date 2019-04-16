@@ -223,6 +223,11 @@ void Search::PrintElapsedTimes() {
 }
 
 void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
+  end_total_ = std::chrono::high_resolution_clock::now();
+  elapsed_time_total_ = end_total_ - begin_total_;
+	if(elapsed_time_total_.count() >= 180) {
+			exit(0);
+	}
   PrintElapsedTimes();
   if (++num_iters_ > max_iters_) {
     // TODO(jburnim): Devise a better system for capping the iterations.

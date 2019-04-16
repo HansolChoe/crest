@@ -14,6 +14,7 @@
 #include <getopt.h>
 
 #include "run_crest/concolic_search.h"
+#include <unistd.h>
 
 struct option long_options[] =
 {
@@ -40,6 +41,7 @@ void print_help() {
 int main(int argc, char* argv[]) {
     int opt;
     int option_index = 0;
+    alarm(10800);
     if (argc < 4) {
         print_help();
         return 1;
