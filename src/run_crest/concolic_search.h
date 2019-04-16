@@ -67,6 +67,7 @@ class Search {
   std::chrono::duration<double> elapsed_time_total_;
   std::chrono::duration<double> elapsed_time_solving_;
   std::chrono::duration<double> elapsed_time_program_;
+  map<branch_id_t, unsigned int> branch_hit_map_;
 
   typedef vector<branch_id_t>::const_iterator BranchIt;
 

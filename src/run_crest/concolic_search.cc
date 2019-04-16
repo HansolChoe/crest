@@ -226,8 +226,20 @@ void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
   end_total_ = std::chrono::high_resolution_clock::now();
   elapsed_time_total_ = end_total_ - begin_total_;
 	if(elapsed_time_total_.count() >= 180) {
-			exit(0);
+		FILE *f = fopen("branch_hit_map", "w");
+		if (!f) {
+			fprintf(stderr, "Writing logging, failed to open %s.\n", log_file_name_.c_str());
+			perror("Error: ");
+			exit(1);
+		}
+		for(auto pair : branch_hit_map_) {
+			fprintf(f, "%d, %d\n", pair.first, pair.second);
+		}
+		fclose(f);
+		exit(0);
 	}
+
+	
   PrintElapsedTimes();
   if (++num_iters_ > max_iters_) {
     // TODO(jburnim): Devise a better system for capping the iterations.
@@ -561,11 +573,13 @@ void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev
 
     if(loop_bound_branches_[branch]) {
       if(branch_count[branch] >= loop_bound_branches_[branch]) {
+	branch_hit_map_[branch]++;
         continue;
       }
     }
 
     if(branch_count[branch] >= loop_bound_ + additional_loop_bound_) {
+	branch_hit_map_[branch]++;
       continue;
     }
 
