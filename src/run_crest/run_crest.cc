@@ -49,9 +49,11 @@ int main(int argc, char* argv[]) {
     char *depth = 0;
     char *loop_bound = 0;
     char *loop_bound_update_gap = "0";
+    char *time_out = "1000000";
 
     string solver = "z3";
 
+    bool verbose = false;
     bool is_initial_input_option = false;
     bool is_resume_option = false;
     bool is_logging_option = false;
@@ -65,7 +67,7 @@ int main(int argc, char* argv[]) {
     gettimeofday(&tv, NULL);
     srand((tv.tv_sec * 1000000) + tv.tv_usec);
 
-    while((opt = getopt_long_only(argc, argv,"a:b:il:yf:g:", long_options, &option_index)) != EOF) {
+    while((opt = getopt_long_only(argc, argv,"a:b:f:g:ilt:vy", long_options, &option_index)) != EOF) {
         switch(opt) {
             case 0:
                 if (search_type != "") {
@@ -124,6 +126,15 @@ int main(int argc, char* argv[]) {
                   return 1;
               }
               break;
+            case 't':
+              printf("t = %s\n", optarg);
+              if (optarg) {
+                  time_out = optarg;
+              } else {
+                  fprintf(stderr, "Enter time out (in secs)\n");
+                  return 1;
+              }
+              break;
             case 'g':
                 if (optarg) {
                     loop_bound_update_gap = optarg;
@@ -134,6 +145,9 @@ int main(int argc, char* argv[]) {
               break;
             case 'y':
               solver = "yices";
+              break;
+            case 'v':
+              verbose = true;
               break;
             default:
                 print_help();
@@ -185,7 +199,10 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Unknown search strategy: %s\n", search_type.c_str());
         return 1;
     }
+  strategy->SetTimeOut(atoi(time_out));
   strategy->SetSolver(solver);
+  strategy->SetVerbose(verbose);
+
   if(is_logging_option) {
     strategy->SetIsLoggingOption(is_logging_option);
     strategy->SetLogFileName(log_file_name);

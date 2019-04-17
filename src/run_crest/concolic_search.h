@@ -44,7 +44,8 @@ class Search {
   void SetSolver(string& solver);
   void SetIsLoggingOption(bool is_logging_option);
   void SetLogFileName(string& log_file_name);
-
+  void SetVerbose(bool verbose);
+  void SetTimeOut(int time_out);
  protected:
   vector<branch_id_t> branches_;
   vector<branch_id_t> paired_branch_;
@@ -60,13 +61,15 @@ class Search {
   function_id_t max_function_;
   unsigned int reachable_functions_;
   unsigned int reachable_branches_;
-
+  int time_out_;
   time_t start_time_;
   std::chrono::high_resolution_clock::time_point begin_total_;
   std::chrono::high_resolution_clock::time_point end_total_;
   std::chrono::duration<double> elapsed_time_total_;
   std::chrono::duration<double> elapsed_time_solving_;
   std::chrono::duration<double> elapsed_time_program_;
+
+  bool verbose_;
 
   typedef vector<branch_id_t>::const_iterator BranchIt;
 

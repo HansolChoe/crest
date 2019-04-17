@@ -25,6 +25,8 @@
 #include "base/z3_solver.h"
 #include "run_crest/concolic_search.h"
 
+#define V(x) if(verbose_){x;}
+
 using std::binary_function;
 using std::ifstream;
 using std::ios;
@@ -148,6 +150,16 @@ Search::Search(const string& program, int max_iterations)
 
 Search::~Search() { }
 
+
+
+void Search::SetVerbose(bool verbose) {
+  verbose_ = verbose;
+}
+
+void Search::SetTimeOut(int time_out) {
+  time_out_ = time_out;
+}
+
 void Search::SetSolver(string& solver) {
   solver_ = solver;
 }
@@ -223,11 +235,18 @@ void Search::PrintElapsedTimes() {
 }
 
 void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
-  PrintElapsedTimes();
+  if(elapsed_time_total_.count() >= time_out_) {
+    PrintElapsedTimes();
+    exit(0);
+  }
+  V(PrintElapsedTimes();)
   if (++num_iters_ > max_iters_) {
     // TODO(jburnim): Devise a better system for capping the iterations.
     exit(0);
   }
+  end_total_ = std::chrono::high_resolution_clock::now();
+  elapsed_time_total_ = end_total_ - begin_total_;
+
 
   // Run the program.
   LaunchProgram(inputs);
@@ -565,7 +584,7 @@ void BoundedDepthFirstSearch::DFS(size_t pos, int depth, SymbolicExecution& prev
     }
 
     branch_count[branch]++;
-    std::cerr << "branch_count[" << branch << "] = " << branch_count[branch] << std::endl;
+    V(std::cerr << "branch_count[" << branch << "] = " << branch_count[branch] << std::endl;)
     // std::cerr << "branch_count[" << branch << "] = " << branch_count[branch] << std::endl;
 
     int prev_covered = total_num_covered_;
@@ -827,7 +846,7 @@ void RandomSearch::SolveUncoveredBranches(size_t i, int depth,
     idxs.pop_back();
 
     if (SolveAtBranch(ex_, i, next_input)) {
-      fprintf(stderr, "Solved %zu/%zu\n", i, idxs.size());
+      V(fprintf(stderr, "Solved %zu/%zu\n", i, idxs.size());)
       *idx = i;
       return true;
     }
@@ -1095,18 +1114,18 @@ void CfgHeuristicSearch::Run() {
     RunProgram(vector<value_t>(), &ex);
     if (UpdateCoverage(ex)) {
       UpdateBranchDistances();
-      PrintStats();
+      V(PrintStats();)
     }
 
     // while (DoSearch(3, 200, 0, kInfiniteDistance+10, ex)) {
     while (DoSearch(5, 30, 0, kInfiniteDistance, ex)) {
     // while (DoSearch(3, 10000, 0, kInfiniteDistance, ex)) {
-      PrintStats();
+      V(PrintStats();)
       // As long as we keep finding new branches . . . .
       UpdateBranchDistances();
       ex.Swap(success_ex_);
     }
-    PrintStats();
+    V(PrintStats();)
   }
 }
 
@@ -1279,7 +1298,7 @@ bool CfgHeuristicSearch::DoSearch(int depth,
     if ((dist_[bid] > 0) &&
         SolveAlongCfg(b_idx, scoredBranches[i].second-1, cur_ex)) {
       num_top_solve_successes_ ++;
-      PrintStats();
+      V(PrintStats();)
       return true;
     }
 
