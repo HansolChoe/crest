@@ -837,6 +837,9 @@ void RandomSearch::SolveUncoveredBranches(size_t i, int depth,
   for (size_t i = 0; i < idxs.size(); i++) {
     branch_id_t branch = path.branches()[path.constraints_idx()[i]];
     branch_count[branch]++;
+    if(branch_count[branch] > loop_bound_) {
+      break;
+    }
     idxs[i] = i;
   }
 
@@ -849,10 +852,10 @@ void RandomSearch::SolveUncoveredBranches(size_t i, int depth,
     swap(idxs[r], idxs.back());
     idxs.pop_back();
     branch_id_t branch = path.branches()[path.constraints_idx()[i]];
-    if(branch_count[branch] > loop_bound_) {
-      V(fprintf(stderr,"branch %d\n", branch);)
-      continue;
-    }
+    // if(branch_count[branch] > loop_bound_) {
+    //   V(fprintf(stderr,"branch %d\n", branch);)
+    //   continue;
+    // }
 
     if (SolveAtBranch(ex_, i, next_input)) {
       V(fprintf(stderr, "Solved %zu/%zu\n", i, idxs.size());)
