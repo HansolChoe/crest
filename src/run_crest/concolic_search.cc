@@ -838,7 +838,8 @@ void RandomSearch::SolveUncoveredBranches(size_t i, int depth,
     branch_id_t branch = path.branches()[path.constraints_idx()[i]];
     branch_count[branch]++;
     if(branch_count[branch] > loop_bound_) {
-      break;
+      next_input->clear();
+      return false;
     }
     idxs[i] = i;
   }
