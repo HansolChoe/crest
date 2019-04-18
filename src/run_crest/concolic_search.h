@@ -173,7 +173,7 @@ class RandomInputSearch : public Search {
 
 class RandomSearch : public Search {
  public:
-  RandomSearch(const string& program, int max_iterations);
+  RandomSearch(const string& program, int max_iterations, int loop_bound);
   virtual ~RandomSearch();
 
   virtual void Run();
@@ -183,8 +183,9 @@ class RandomSearch : public Search {
 
   void SolveUncoveredBranches(size_t i, int depth,
                               const SymbolicExecution& prev_ex);
-
   bool SolveRandomBranch(vector<value_t>* next_input, size_t* idx);
+
+  int loop_bound_;
 };
 
 

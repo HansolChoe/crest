@@ -668,8 +668,8 @@ void RandomInputSearch::Run() {
 //// RandomSearch //////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
-RandomSearch::RandomSearch(const string& program, int max_iterations)
-  : Search(program, max_iterations) { }
+RandomSearch::RandomSearch(const string& program, int max_iterations, int loop_bound)
+  : Search(program, max_iterations), loop_bound_(loop_bound) { }
 
 RandomSearch::~RandomSearch() { }
 
@@ -831,12 +831,16 @@ void RandomSearch::SolveUncoveredBranches(size_t i, int depth,
       return;
   }
   */
-
-  vector<size_t> idxs(ex_.path().constraints().size());
-  for (size_t i = 0; i < idxs.size(); i++)
+  const SymbolicPath& path = ex_.path();
+  vector<size_t> idxs(path.constraints().size());
+  map<branch_id_t, int> branch_count;
+  for (size_t i = 0; i < idxs.size(); i++) {
+    branch_id_t branch = path.branches()[path.constraints_idx()[i]];
+    branch_count[branch]++;
     idxs[i] = i;
+  }
 
-  for (int tries = 0; tries < 1000; tries++) {
+  for (int tries = 0; tries < 5000; tries++) {
     // Pick a random index.
     if (idxs.size() == 0)
       break;
@@ -844,6 +848,11 @@ void RandomSearch::SolveUncoveredBranches(size_t i, int depth,
     size_t i = idxs[r];
     swap(idxs[r], idxs.back());
     idxs.pop_back();
+    branch_id_t branch = path.branches()[path.constraints_idx()[i]];
+    if(branch_count[branch] > loop_bound_) {
+      V(fprintf(stderr,"branch %d\n", branch);)
+      continue;
+    }
 
     if (SolveAtBranch(ex_, i, next_input)) {
       V(fprintf(stderr, "Solved %zu/%zu\n", i, idxs.size());)

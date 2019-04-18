@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     gettimeofday(&tv, NULL);
     srand((tv.tv_sec * 1000000) + tv.tv_usec);
 
-    while((opt = getopt_long_only(argc, argv,"a:b:f:g:ilt:vy", long_options, &option_index)) != EOF) {
+    while((opt = getopt_long_only(argc, argv,"a:b:f:g:il:t:vy", long_options, &option_index)) != EOF) {
         switch(opt) {
             case 0:
                 if (search_type != "") {
@@ -167,14 +167,16 @@ int main(int argc, char* argv[]) {
     int num_iters = atoi(argv[optind++]);
 
     crest::Search* strategy;
+
+    int depth_ = depth?atoi(depth):1000000;
+    int loop_bound_ = loop_bound?atoi(loop_bound):depth_;
+    int loop_bound_update_gap_ = atoi(loop_bound_update_gap);
+
     if (search_type == "random") {
-        strategy = new crest::RandomSearch(prog, num_iters);
+        strategy = new crest::RandomSearch(prog, num_iters, loop_bound_);
     } else if (search_type == "random_input") {
         strategy = new crest::RandomInputSearch(prog, num_iters);
     } else if (search_type == "dfs") {
-        int depth_ = depth?atoi(depth):1000000;
-        int loop_bound_ = loop_bound?atoi(loop_bound):depth_;
-        int loop_bound_update_gap_ = atoi(loop_bound_update_gap);
         strategy = new crest::BoundedDepthFirstSearch(prog,
                                                       num_iters,
                                                       depth_,
