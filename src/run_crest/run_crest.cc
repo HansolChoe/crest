@@ -193,9 +193,9 @@ int main(int argc, char* argv[]) {
         strategy = new crest::HybridSearch(prog, num_iters, 100);
     } else if (search_type == "uniform_random") {
         if (!optarg) {
-            strategy = new crest::UniformRandomSearch(prog, num_iters, 100000000);
+            strategy = new crest::UniformRandomSearch(prog, num_iters, 100000000, loop_bound_);
         } else {
-            strategy = new crest::UniformRandomSearch(prog, num_iters, atoi(depth));
+            strategy = new crest::UniformRandomSearch(prog, num_iters, atoi(depth), loop_bound_);
         }
     } else {
         fprintf(stderr, "Unknown search strategy: %s\n", search_type.c_str());

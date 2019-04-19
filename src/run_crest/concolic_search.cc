@@ -878,8 +878,9 @@ void RandomSearch::SolveUncoveredBranches(size_t i, int depth,
 
 UniformRandomSearch::UniformRandomSearch(const string& program,
 					 int max_iterations,
-					 size_t max_depth)
-  : Search(program, max_iterations), max_depth_(max_depth) { }
+					 size_t max_depth,
+           int loop_bound)
+  : Search(program, max_iterations), max_depth_(max_depth) ,loop_bound_(loop_bound){ }
 
 UniformRandomSearch::~UniformRandomSearch() { }
 
@@ -895,13 +896,24 @@ void UniformRandomSearch::Run() {
     DoUniformRandomPath();
   }
 }
-
+/*
+map<branch_id_t, int> branch_count;
+for (size_t i = 0; i < idxs.size(); i++) {
+  branch_id_t branch = path.branches()[path.constraints_idx()[i]];
+  branch_count[branch]++;
+  if(branch_count[branch] > loop_bound_) {
+    next_input->clear();
+    return false;
+  }
+*/
 void UniformRandomSearch::DoUniformRandomPath() {
   vector<value_t> input;
 
   size_t i = 0;
   size_t depth = 0;
   fprintf(stderr, "%zu constraints.\n", prev_ex_.path().constraints().size());
+  map<branch_id_t, int> branch_count;
+
   while ((i < prev_ex_.path().constraints().size()) && (depth < max_depth_)) {
     if (SolveAtBranch(prev_ex_, i, &input)) {
       fprintf(stderr, "Solved constraint %zu/%zu.\n",
@@ -910,6 +922,12 @@ void UniformRandomSearch::DoUniformRandomPath() {
 
       // With probability 0.5, force the i-th constraint.
       if (rand() % 2 == 0) {
+        const SymbolicPath& path = prev_ex_.path();
+        branch_id_t branch = path.branches()[path.constraints_idx()[i]];
+        branch_count[branch]++;
+        if(branch_count[branch] > loop_bound_) {
+          return;
+        }
 	RunProgram(input, &cur_ex_);
 	UpdateCoverage(cur_ex_);
 	size_t branch_idx = prev_ex_.path().constraints_idx()[i];

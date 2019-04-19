@@ -191,7 +191,7 @@ class RandomSearch : public Search {
 
 class UniformRandomSearch : public Search {
  public:
-  UniformRandomSearch(const string& program, int max_iterations, size_t max_depth);
+  UniformRandomSearch(const string& program, int max_iterations, size_t max_depth, int loop_bound);
   virtual ~UniformRandomSearch();
 
   virtual void Run();
@@ -199,7 +199,7 @@ class UniformRandomSearch : public Search {
  private:
   SymbolicExecution prev_ex_;
   SymbolicExecution cur_ex_;
-
+  int loop_bound_;
   size_t max_depth_;
 
   void DoUniformRandomPath();
